@@ -1,0 +1,99 @@
+<%- include('_layouts/header'); %>
+
+<h1 class="page-title">My Cart</h1>
+<br><br>
+
+<% if (typeof cart !== "undefined"){ %>
+    <table class="table table-striped aignmiddle">
+
+        <tr>
+          <th>Image</th>
+          <th>Title</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th></th>
+          <th>Subtotal</th>  
+        </tr>
+        <% cart.forEach((product)=>{ %>
+
+        <tr>   
+            <td><img class="cpi" src="/product_images/<%= product.item._id %>/<%= product.item.image %>" alt=""></td>
+            <td><%= product.item.title %></td>
+            <td><%= product.item.price %></td>
+            <td><%= product.qty %></td>
+            <td>
+                <a href="/cart/update/<%= product.item._id %>?action=add">+</a>&nbsp;
+                <a href="/cart/update/<%= product.item._id %>?action=remove">-</a>&nbsp;
+                <a href="/cart/update/<%= product.item._id %>?action=clear">Clear</a>&nbsp;
+            </td>
+            <td><%= product.price %></td>
+        </tr>    
+        <% }); %>
+        <tr>
+            <td colspan="5" align="right"><b>Total: </b></td>
+            <td colspan="5"><b><%= totalPrice %></b></td>
+        </tr>
+        <tr>
+            <td colspan="5" align="right">
+                <a class="clearcart btn btn-danger" href="/cart/clear">Clear</a>
+            </td>
+            <td colspan="5" align="right">
+                <div class="dropdown show">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Buy Now
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item btn btn-primary paypalCheckOut" href="#">PayPal</a>
+                        <a class="dropdown-item stripeCheckOut" href="/cart/stripeCheckOut">Stripe</a>
+                    </div>
+                  </div>
+            </td>
+        </tr>
+    </table>
+    <form class="pp" action="https://www.sandbox.paypal.com/us/cgi-bin/webscr" method="post">
+        <input type="hidden" name="cmd" value="_cart">
+        <input type="hidden" name="business" value="jultranet-facilitator@gmail.com">
+        <% var num=0 %>
+        <% cart.forEach((p)=>{ %>
+        <% num++ %>
+            <input type="hidden" name="item_name_<%= num %>" value="<%= p.item.title %>">  
+            <input type="hidden" name="amount_<%= num %>" value="<%= p.item.price %>">    
+            <input type="hidden" name="quantity_<%= num %>" value="<%= p.qty %>">    
+        <% }); %>    
+        <input type="hidden" name="currency_code" value="USD">
+        <input type="hidden" name="amount" value="<%= totalPrice %>">
+        <input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but01.gif" name="submit" alt="Make payments with PayPal - it's fast, free and secure!">
+    </form>
+
+
+<% }else{ %>
+    <h3 class="text-center">Your cart is empty</h3>  
+<% } %>
+
+<script>
+    $("a.clearcart").on('click',()=>{
+        if(!confirm("clear cart")){
+            return false;
+        }
+    });
+
+    $("a.paypalCheckOut").on('click',(e)=>{
+        e.preventDefault();
+
+        $.get("/cart/",()=>{
+            $("form.pp input[type=image]").click();
+            $('.ajaxbg').show();
+        })
+    });
+
+    // $("a.stripeCheckOut").on('click',(e)=>{
+    //     e.preventDefault();
+
+    //     $.get("/cart/buynow",()=>{
+    //         $("form.pp input[type=image]").click();
+    //         $('.ajaxbg').show();
+    //     })
+    // });
+</script>
+
+<%- include('_layouts/footer'); %>
